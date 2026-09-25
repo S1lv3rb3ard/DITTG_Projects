@@ -1,0 +1,39 @@
+function [Hintra,blocks,info] = buildRelaxedIntralayerHamiltonian( ...
+    stack,DoF,q,shellsReference,relaxationFields,options)
+%BUILDRELAXEDINTRALAYERHAMILTONIAN Assemble all three relaxed intralayer blocks.
+if nargin < 6
+    options = struct;
+end
+defaults = struct( ...
+    'configurationGridSize',5, ...
+    'couplingInnerRadius',6.25, ...
+    'couplingOuterRadius',6.50, ...
+    'shellReferenceLayer',2, ...
+    'useGPU',false, ...
+    'verbose',true);
+options = mergeOptions(options,defaults);
+
+assert(isequal(size(q),[2,1]),'q must be a 2-by-1 column vector.');
+assert(iscell(relaxationFields) && numel(relaxationFields) == 3, ...
+    'relaxationFields must contain three function handles.');
+
+nDoF = size(DoF,1);
+Hintra = sparse(2*nDoF,2*nDoF);
+blocks = cell(1,3);
+info = cell(1,3);
+
+for layer = 1:3
+    assert(isa(relaxationFields{layer},'function_handle'), ...
+        'relaxationFields{%d} must be a function handle.',layer);
+    [blocks{layer},info{layer}] = buildRelaxedIntralayerBlock( ...
+        stack,DoF,layer,q,shellsReference, ...
+        relaxationFields{layer},options);
+    stateIndex = info{layer}.dofIndex;
+    orbitalIndex = reshape([2*stateIndex-1,2*stateIndex].',[],1);
+    Hintra(orbitalIndex,orbitalIndex) = blocks{layer};
+end
+
+relativeError = norm(Hintra-Hintra','fro')/max(norm(Hintra,'fro'),eps);
+assert(relativeError < 1e-13, ...
+    'The assembled intralayer Hamiltonian is not Hermitian.');
+end
