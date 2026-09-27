@@ -8,6 +8,8 @@ addpath(genpath(projectRoot));
 % quadrature orders, P, and the number of points per segment for production.
 a = 1.42*sqrt(3);
 stack = getStack(a,[-1.4,0,2.8]);
+% Uniform vertical compression of the interfaces (eps = d/d0 - 1 < 0), e.g.
+% stack = setInterlayerCompression(stack,compressionFromPressure(5));  % 5 GPa
 W = 0.35;
 L = 10;
 DoF = getDoF(stack,W,L,'clean');
@@ -18,11 +20,15 @@ tB = [-2.99251,-0.28983,0.02791,-0.00877,-0.01870, ...
       0.00621,-0.00256,-0.00018,-0.00033,-0.00264].';
 shells = getInterpolatedIntralayerHoppingValues(stack,tA,tB,[]);
 
-% Replace this software-test field with the mechanically minimized fields
-% when comparing with physical spectra.
-relaxationFields = makeToyTrilayerRelaxation(stack,0.01*a);
+% Mechanically relaxed fields from the Julia minimizer (example2.jl), read
+% from <projectRoot>/data. Falls back to the toy field with a warning.
+%[relaxationFields, relaxationInfo] = getRelaxationFields(stack, ...
+%    fullfile(projectRoot,'data'),struct('fallback','toy','toyAmplitude',0.01*a));
 
-pointsPerSegment = 8;
+[relaxationFields, relaxationInfo] = getRelaxationFields(stack, ...
+    fullfile(projectRoot,'data'),struct('fallback','none'));
+
+pointsPerSegment = 40;
 linecut = rttg_common.getLinecut(stack.K,pointsPerSegment);
 E = linspace(-0.2, 0.2, 5e3);
 
@@ -48,7 +54,7 @@ hamiltonianOptions.interlayer = struct( ...
 % P is the maximum Chebyshev order.  P=4000 is large enough to make this a
 % meaningful spectral diagnostic; use a smaller value only for code-path
 % smoke tests.
-ldosOptions.P = 5e3;
+ldosOptions.P = 8e3;
 ldosOptions.mode = 'gpu';
 ldosOptions.scale = []; % rigorous automatic bound over this line cut
 ldosOptions.scaleSafetyFactor = 1.25;

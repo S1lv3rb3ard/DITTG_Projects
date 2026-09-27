@@ -31,4 +31,8 @@ end
 
 scale = max(abs(stack.tau),[],'all');
 stack.tau(abs(stack.tau) < 100*eps(scale)) = 0;
+
+% Uniform interlayer spacing d0 = 3.35 A with the Carr et al. (2018)
+% interlayer parameterization; change with setInterlayerCompression.
+stack = setInterlayerCompression(stack,[0,0],'carr2018');
 end

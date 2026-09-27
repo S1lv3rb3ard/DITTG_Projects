@@ -30,11 +30,6 @@ Gl = DoF(dofIndex,2*lLayer+(1:2));
 m = numel(dofIndex);
 assert(m > 0,'Layer %d has no retained DoFs.',layer);
 
-shellMap = stack.A{layer}/stack.A{options.shellReferenceLayer};
-RA = shellMap*shellsReference.matA;
-RB = shellMap*shellsReference.matB;
-t = stack.tau(:,layer);
-
 N = options.configurationGridSize;
 [bk1,bk2,bl1,bl2] = ndgrid((0:N-1)/N);
 bk = stack.A{kLayer}*[bk1(:),bk2(:)].';
@@ -44,41 +39,25 @@ clear bk1 bk2 bl1 bl2
 useGPU = options.useGPU;
 bk = toDevice(bk,useGPU);
 bl = toDevice(bl,useGPU);
-RADevice = toDevice(RA,useGPU);
-RBDevice = toDevice(RB,useGPU);
+t = stack.tau(:,layer);
 tDevice = toDevice(t,useGPU);
 weight = 1/N^4;
 
-RAcell = num2cell(RADevice,1);
-RBcell = num2cell(RBDevice,1);
-
-inputAA = cellfun(@(R) ...
-    R+relaxation(R+bk,R+bl)-relaxation(bk,bl), ...
-    RAcell,'UniformOutput',false);
-inputAA = squeeze(vecnorm(cat(3,inputAA{:}),2,1));
-hopAA = toDevice(shellsReference.intraAA(toHost(inputAA,useGPU)),useGPU);
-
-inputBB = cellfun(@(R) ...
-    R+relaxation(R+bk+tDevice,R+bl+tDevice) ...
-     -relaxation(bk+tDevice,bl+tDevice), ...
-    RAcell,'UniformOutput',false);
-inputBB = squeeze(vecnorm(cat(3,inputBB{:}),2,1));
-hopBB = toDevice(shellsReference.intraAA(toHost(inputBB,useGPU)),useGPU);
-
-inputAB = cellfun(@(R) ...
-    R+relaxation(R+bk,R+bl) ...
-     -relaxation(bk+tDevice,bl+tDevice), ...
-    RBcell,'UniformOutput',false);
-inputAB = squeeze(vecnorm(cat(3,inputAB{:}),2,1));
-hopAB = toDevice(shellsReference.intraAB(toHost(inputAB,useGPU)),useGPU);
-
-inputBA = cellfun(@(R) ...
-    R+relaxation(R+bk+tDevice,R+bl+tDevice) ...
-     -relaxation(bk,bl), ...
-    RBcell,'UniformOutput',false);
-inputBA = squeeze(vecnorm(cat(3,inputBA{:}),2,1));
-hopBA = toDevice(shellsReference.intraAB(toHost(inputBA,useGPU)),useGPU);
-clear inputAA inputBB inputAB inputBA RAcell RBcell
+% Relaxed hoppings for AA, AB, BA, BB (row, column) at disregistry-consistent
+% orbital configurations; bond0 = d + tau_row - tau_col.
+channels = sampleRelaxedIntralayerChannels(stack,shellsReference, ...
+    relaxation,layer,bk,bl, ...
+    struct('shellReferenceLayer',options.shellReferenceLayer, ...
+           'useGPU',useGPU));
+bondAADevice = toDevice(channels(1).bond0,useGPU);
+bondABDevice = toDevice(channels(2).bond0,useGPU);
+bondBADevice = toDevice(channels(3).bond0,useGPU);
+bondBBDevice = toDevice(channels(4).bond0,useGPU);
+hopAA = channels(1).hopping;
+hopAB = channels(2).hopping;
+hopBA = channels(3).hopping;
+hopBB = channels(4).hopping;
+clear channels
 
 pairCount = 0;
 for i = 1:m
@@ -113,24 +92,23 @@ for i = 1:m
         continue
     end
 
+    % Theorem 4.2 with Q = q + S G' and bond0 = d + tau_row - tau_col.
     Q = q.'+Gk(i,:)+Gl(i,:);
-    Q2 = Q+dGk+dGl;
     dGkDevice = toDevice(dGk,useGPU);
     dGlDevice = toDevice(dGl,useGPU);
     QDevice = toDevice(Q,useGPU);
-    Q2Device = toDevice(Q2,useGPU);
 
     phaseG = exp(1i*dGkDevice*bk).*exp(1i*dGlDevice*bl);
-    phaseQA = exp(-1i*QDevice*RADevice);
-    phaseQB = exp(-1i*QDevice*RBDevice);
+    phaseTauB = exp(1i*(dGkDevice+dGlDevice)*tDevice);
 
-    hAA = weight*sum(phaseQA.*(phaseG*hopAA),2);
-    hBB = weight*exp(1i*(dGkDevice+dGlDevice)*tDevice) ...
-        .*sum(phaseQA.*(phaseG*hopBB),2);
-    hAB = weight*exp(1i*Q2Device*tDevice) ...
-        .*sum(phaseQB.*(phaseG*hopAB),2);
-    hBA = weight*exp(-1i*QDevice*tDevice) ...
-        .*sum(phaseQB.*(phaseG*hopBA),2);
+    hAA = weight*sum(exp(-1i*QDevice*bondAADevice) ...
+        .*(phaseG*hopAA),2);
+    hAB = weight*phaseTauB.*sum(exp(-1i*QDevice*bondABDevice) ...
+        .*(phaseG*hopAB),2);
+    hBA = weight*sum(exp(-1i*QDevice*bondBADevice) ...
+        .*(phaseG*hopBA),2);
+    hBB = weight*phaseTauB.*sum(exp(-1i*QDevice*bondBBDevice) ...
+        .*(phaseG*hopBB),2);
     blockValues = couplingChi.*toHost([hAA,hAB,hBA,hBB],useGPU);
 
     for p = 1:numel(J)

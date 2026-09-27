@@ -7,14 +7,17 @@ blocks = cell(1,3);
 info = cell(1,3);
 for layer = 1:3
     data = cache.layer{layer};
-    phaseA = exp(-1i*q.'*data.RA).';
-    phaseAB = exp(-1i*q.'*data.RBminusTau).';
-    phaseBA = exp(-1i*q.'*data.RBplusTau).';
+    % Unrelaxed bond vectors r_row - r_col for each channel; the Bloch
+    % convention includes the orbital offsets, as in the interlayer blocks.
+    phaseAA = exp(-1i*q.'*data.bondAA).';
+    phaseAB = exp(-1i*q.'*data.bondAB).';
+    phaseBA = exp(-1i*q.'*data.bondBA).';
+    phaseBB = exp(-1i*q.'*data.bondBB).';
 
-    values = [data.coeffAA*phaseA, ...
+    values = [data.coeffAA*phaseAA, ...
               data.coeffAB*phaseAB, ...
               data.coeffBA*phaseBA, ...
-              data.coeffBB*phaseA];
+              data.coeffBB*phaseBB];
     values = data.couplingChi.*values;
 
     diagonal = data.diagonal;

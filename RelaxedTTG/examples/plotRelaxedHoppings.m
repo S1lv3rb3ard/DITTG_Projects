@@ -11,10 +11,10 @@ tA = [0,0.3302,0.23206,0.04969,-0.02499, ...
 tB = [-2.99251,-0.28983,0.02791,-0.00877,-0.01870, ...
       0.00621,-0.00256,-0.00018,-0.00033,-0.00264].';
 shells = getInterpolatedIntralayerHoppingValues(stack,tA,tB,[]);
-% This low-harmonic field only tests the plotting/assembly pipeline. It is
-% not the mechanically minimized 0.3-degree field used in Massatt et al.,
-% and therefore will not reproduce their long snowflake Fourier tails.
-relaxationFields = makeToyTrilayerRelaxation(stack,0.01*a);
+% Mechanically relaxed fields from the Julia minimizer (example2.jl), read
+% from <projectRoot>/data. Falls back to the toy field with a warning.
+[relaxationFields,relaxationInfo] = getRelaxationFields(stack, ...
+    fullfile(projectRoot,'data'),struct('fallback','toy','toyAmplitude',0.01*a));
 
 % Discrete relaxed real-space bonds for layer 1 at a chosen configuration.
 intralayerPlotOptions = struct( ...

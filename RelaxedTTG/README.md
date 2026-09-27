@@ -40,7 +40,101 @@ The direct entry point is
 `parts.intralayer` and `parts.interlayer` contain the two contributions.
 For layer `j`, define `relaxationFields{j}(xk,xl)` with
 `[k,l]=setdiff(1:3,j,'stable')`. Inputs and outputs are `2-by-N` physical
-coordinate arrays.
+coordinate arrays: `xk` and `xl` are the position of a point of layer `j`
+modulo the lattices of layers `k` and `l`, and the output is its in-plane
+displacement in Angstrom.
+
+### Relaxation fields
+
+Mechanically relaxed fields come from the Julia configuration-space
+minimizer (`Trilayers.jl`, `GrapheneParameters.jl`, `example2.jl`):
+
+```bash
+julia example2.jl <theta12> <theta23> <N>   # writes data/triG_*_<t12>_<t23>_<N>.jld
+```
+
+```matlab
+stack = getStack(a,[-theta12,0,-theta23]);   % Julia rotates clockwise
+[relaxationFields,info] = getRelaxationFields(stack,fullfile(projectRoot,'data'));
+% or explicitly
+[relaxationFields,info] = loadJuliaTrilayerRelaxation(minimizerFile,dataFile,stack);
+```
+
+`loadJuliaTrilayerRelaxation` reads the raw `Base.write` output (the `.jld`
+extension is historical; the files are plain little-endian binaries) and
+builds an exactly periodic trigonometric interpolant of the hull data. It
+reconciles three differences between the two codes: Julia stores the shift
+`b = R - x` (minus the MATLAB configuration), orders layer 3's configuration
+pairs as (layer 2, layer 1), and uses a lattice basis rotated by 30 degrees
+with clockwise twists. The frame rotation is found and checked against every
+layer and orbital, and a stack whose angles do not match the Julia run is
+rejected. `getRelaxationFields` picks the largest `N` available for the
+stack's angles; the examples fall back to `makeToyTrilayerRelaxation` with a
+warning when no Julia output is present.
+
+**Evaluation points.** An orbital at `R + tau` in layer `j` is displaced by
+`u_j(T_j R + D_j tau)`, where `D_j tau = (I - A_t A_j^{-1}) tau` in each slot
+`t ~= j` (`getDisregistryOffsets`). This is the smooth disregistry of that
+orbital. Evaluating at `T_j (R + tau)` instead shifts the configuration by a
+sizeable fraction of a moire period and gives spurious bond strains of the
+order of `max|u|` (for a (0.8, 1.1) degree relaxation, 0.27 A on
+nearest-neighbour A-B bonds, against a physical 0.004 A). All intralayer
+channels are sampled by `sampleRelaxedIntralayerChannels`, and interlayer
+bonds by `evaluateRelaxedInterlayerPosition`.
+
+**Vertical compression.** `getStack` sets both interfaces to `d0 = 3.35 A`
+with the interlayer parameters of Carr, Fang, Jarillo-Herrero & Kaxiras
+(PRB 98, 085144, 2018), whose quadratic fits in `eps = d/d0 - 1` (negative
+under compression) are used at every compression, including zero:
+
+```matlab
+stack = setInterlayerCompression(stack,[eps12,eps23]);
+stack = setInterlayerCompression(stack,compressionFromPressure(P_GPa));
+```
+
+The fits cover `-0.2 <= eps <= 0`. For expansion, `0 < eps <= 0.15` (for
+example the AA regions of a corrugated moire), the amplitudes lambda0,
+lambda3, lambda6 continue exponentially and the shape parameters linearly,
+matched in value and slope at `eps = 0`; the quadratic fits themselves turn
+upward for `eps > 0` and are not used there. Values outside
+`[-0.2, 0.15]` warn. A per-sample distance can be passed directly,
+`realSpaceInterlayerHopping(r,stack,j,k,alpha,beta,localEpsilon)`. The
+previous constant Fang-Kaxiras (2016) parameters remain available at zero
+compression as `setInterlayerCompression(stack,0,'fangKaxiras2016')`.
+
+### Corrugated, pressure-consistent relaxation (Julia)
+
+`TrilayersVertical.jl` / `example_vertical.jl` extend the in-plane
+minimizer with out-of-plane fields `w_j`, mean spacings `dbar12`, `dbar23`,
+bending energy `(1/2) kappa Omega <(Lap w)^2>` (kappa = 1.4 eV by default),
+the enthalpy `P Omega (dbar12 + dbar23)`, and a distance-dependent stacking
+energy
+
+    Phi(s,d) = c0(d) + R(d) * GSFE(s).
+
+`GSFE` is the zero-pressure functional of `GrapheneParameters.jl`; `R(d)`
+is the distance scaling of the AA-AB energy of the refined Kolmogorov-Crespi
+potential (Ouyang et al., Nano Lett. 18, 6009 (2018)), fitted as
+`log R = poly(eps)` on `-0.2 <= eps <= 0.15`; `c0(d)` integrates the pressure
+law of Carr et al., so zero pressure gives `d0 = 3.35 A` for the
+registry-averaged stack and the pressure scale matches the hopping fits.
+
+```bash
+julia example_vertical.jl <theta12> <theta23> <N> [P_GPa] [kappa_eV]
+# -> data/triG_vz_{data,minimizer,vertical}_<t12>_<t23>_<N>_P<P>.jld
+```
+
+The `data` and `minimizer` files have the same layout as `example2.jl`
+output, so `loadJuliaTrilayerRelaxation` reads the in-plane part unchanged.
+Loading `w` into the interlayer hopping of RelaxedTTG is the next step.
+The binding curve for expansion (extrapolated pressure law) and the
+bending modulus are the main modelling uncertainties.
+
+**Intralayer Bloch convention.** The intralayer blocks use the same Bloch
+convention as the interlayer blocks: the element (G',j alpha),(G'',j beta)
+is `sum_d [h]_{G''-G'}(d) exp(-i(q+SG').bond0) exp(i S(G''-G').tau_beta)` with
+`bond0 = d + tau_alpha - tau_beta`, stored per channel in the cache as
+`bondAA`, `bondAB`, `bondBA`, `bondBB`.
 
 The interlayer transform uses no FFT. It evaluates the continuous
 real-space Fourier integral by direct polar quadrature and the normalized

@@ -1,10 +1,21 @@
 function relaxedPosition = evaluateRelaxedInterlayerPosition( ...
     stack,fields,x,bCell,j,k,l,alpha,beta,useGPU)
-%EVALUATERELAXEDINTERLAYERPOSITION Construct x+u_j-u_k on x-by-b nodes.
+%EVALUATERELAXEDINTERLAYERPOSITION Construct x+u_{j,alpha}-u_{k,beta} on x-by-b nodes.
 %
-% For (j,k,l)=(1,2,3), this evaluates
-% x + u_1(x-tau_2beta,x+tau_2beta+b_3)
-%   - u_2(-x+tau_1alpha,b_3).
+% x is the continuous interlayer coordinate d_tau = R - R' + tau_{j alpha}
+% - tau_{k beta} of the bond from (R',k beta) to (R,j alpha), and bCell is
+% the spectator configuration of the column lattice point, b = R' mod R_l.
+% With e = x - tau_{j alpha} + tau_{k beta} = R - R', the lattice points have
+% configurations T_j R = (e, e + b) in slots (k,l) and T_k R' = (-e, b) in
+% slots (j,l). Each orbital field is evaluated at its disregistry
+% configuration u_{j,alpha}(c) = u_j(c + D_j tau_{j alpha}):
+%
+%   u_{j,alpha}: slot k  e + (I - A_k A_j^{-1}) tau_{j alpha}
+%                slot l  e + b + (I - A_l A_j^{-1}) tau_{j alpha}
+%   u_{k,beta} : slot j -e + (I - A_j A_k^{-1}) tau_{k beta}
+%                slot l  b + (I - A_l A_k^{-1}) tau_{k beta}
+%
+% See getDisregistryOffsets and Section 3.2 of the accompanying paper.
 if nargin < 10
     useGPU = false;
 end
@@ -15,17 +26,20 @@ xDevice = toDevice(x,useGPU);
 bDevice = toDevice(bCell,useGPU);
 xAll = repmat(xDevice,1,nB);
 bAll = repelem(bDevice,1,nX);
-tauJ = toDevice((alpha-1)*stack.tau(:,j),useGPU);
-tauK = toDevice((beta-1)*stack.tau(:,k),useGPU);
+tauJ = (alpha-1)*stack.tau(:,j);
+tauK = (beta-1)*stack.tau(:,k);
+offsetJ = toDevice(getDisregistryOffsets(stack,j,tauJ),useGPU);
+offsetK = toDevice(getDisregistryOffsets(stack,k,tauK),useGPU);
+eAll = xAll-toDevice(tauJ,useGPU)+toDevice(tauK,useGPU);
 
 coordinatesJ = cell(1,3);
-coordinatesJ{k} = xAll-tauK;
-coordinatesJ{l} = xAll+tauK+bAll;
+coordinatesJ{k} = eAll+offsetJ(:,k);
+coordinatesJ{l} = eAll+bAll+offsetJ(:,l);
 uJ = evaluateField(fields{j},j,coordinatesJ);
 
 coordinatesK = cell(1,3);
-coordinatesK{j} = -xAll+tauJ;
-coordinatesK{l} = bAll;
+coordinatesK{j} = -eAll+offsetK(:,j);
+coordinatesK{l} = bAll+offsetK(:,l);
 uK = evaluateField(fields{k},k,coordinatesK);
 relaxedPosition = xAll+uJ-uK;
 end
