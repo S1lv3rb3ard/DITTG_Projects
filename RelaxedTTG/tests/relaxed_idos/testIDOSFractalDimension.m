@@ -3,7 +3,7 @@ function tests = testIDOSFractalDimension
 tests = functiontests(localfunctions);
 end
 
-function uniformMeasureHasDimensionOne(testCase)
+function testUniformMeasureHasDimensionOne(testCase)
 E = linspace(0,1,16385);
 IDOS = E;
 scales = 2.^(-(2:7));
@@ -23,7 +23,7 @@ verifyGreaterThan(testCase,dimension.generalized.fitR2, ...
     (1-1e-12)*ones(1,3));
 end
 
-function atomHasDimensionZero(testCase)
+function testAtomHasDimensionZero(testCase)
 E = linspace(-1,1,20001);
 IDOS = double(E >= 0);
 scales = 2.^(-(2:7));

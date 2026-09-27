@@ -3,7 +3,7 @@ function tests = testInterlayerCompression
 tests = functiontests(localfunctions);
 end
 
-function carrFitsAtZeroAndTenPercent(testCase)
+function testCarrFitsAtZeroAndTenPercent(testCase)
 p0 = getInterlayerHoppingParameters('carr2018',0);
 verifyEqual(testCase,[p0.lambda0,p0.xi0,p0.kappa0,p0.lambda3,p0.xi3, ...
     p0.x3,p0.lambda6,p0.xi6,p0.x6,p0.kappa6], ...
@@ -15,23 +15,23 @@ verifyEqual(testCase,p.lambda0,0.310+0.1882+0.07741,'AbsTol',1e-12);
 verifyGreaterThan(testCase,p.lambda0,p0.lambda0);
 end
 
-function pressureLawRoundTrip(testCase)
+function testPressureLawRoundTrip(testCase)
 epsilon = compressionFromPressure(9.2);
 verifyEqual(testCase,epsilon,-0.1,'AbsTol',2e-3);
 verifyEqual(testCase,5.73*(exp(-9.54*epsilon)-1),9.2,'AbsTol',1e-12);
 verifyEqual(testCase,compressionFromPressure(0),0);
 end
 
-function extrapolationWarns(testCase)
+function testExtrapolationWarns(testCase)
 verifyWarning(testCase,@() getInterlayerHoppingParameters('carr2018',0.2), ...
     'getInterlayerHoppingParameters:extrapolation');
 verifyWarning(testCase,@() getInterlayerHoppingParameters('carr2018',-0.25), ...
     'getInterlayerHoppingParameters:extrapolation');
 verifyError(testCase,@() getInterlayerHoppingParameters('fangKaxiras2016',-0.1), ...
-    'MATLAB:assertion:failed');
+    'getInterlayerHoppingParameters:noCompression');
 end
 
-function legacyModelReproducesPreviousHopping(testCase)
+function testLegacyModelReproducesPreviousHopping(testCase)
 stack = getStack(1.42*sqrt(3),[-1.4,0,2.8]);
 stack = setInterlayerCompression(stack,0,'fangKaxiras2016');
 rng(7);
@@ -45,7 +45,7 @@ for alpha = 1:2
 end
 end
 
-function compressionIsPerInterface(testCase)
+function testCompressionIsPerInterface(testCase)
 stack = getStack(1.42*sqrt(3),[-1.4,0,2.8]);
 stack = setInterlayerCompression(stack,[-0.1,0]);
 r = [0.4;0.1];
@@ -59,7 +59,7 @@ verifyError(testCase,@() realSpaceInterlayerHopping(r,stack,1,3,1,1), ...
     'realSpaceInterlayerHopping:unsupportedPair');
 end
 
-function expansionContinuationIsSmoothAndDecaying(testCase)
+function testExpansionContinuationIsSmoothAndDecaying(testCase)
 % C^1 at eps = 0, amplitudes decrease monotonically with distance over the
 % whole supported range, and the array form matches the scalar form.
 names = {'lambda0','xi0','kappa0','lambda3','xi3','x3', ...
@@ -83,7 +83,7 @@ single = getInterlayerHoppingParameters('carr2018',epsilon(300));
 verifyEqual(testCase,p.lambda0(300),single.lambda0,'AbsTol',1e-15);
 end
 
-function localDistanceOverridesInterface(testCase)
+function testLocalDistanceOverridesInterface(testCase)
 stack = getStack(1.42*sqrt(3),[-1.4,0,2.8]);
 r = [0.3,1.2,-0.7;0.1,-0.4,2.0];
 uniform = realSpaceInterlayerHopping(r, ...
@@ -94,6 +94,41 @@ mixed = realSpaceInterlayerHopping(r,stack,1,2,1,2,[0,0.05,-0.1]);
 verifyEqual(testCase,mixed(2),uniform(2),'AbsTol',1e-15);
 verifyEqual(testCase,mixed(1), ...
     realSpaceInterlayerHopping(r(:,1),stack,1,2,1,2),'AbsTol',1e-15);
+end
+
+function testDefaultStackReproducesPaperModel(testCase)
+% With no compression the default interlayer hopping must be exactly the
+% Fang-Kaxiras (2016) model used in arXiv:2606.13434.
+stack = getStack(1.42*sqrt(3),[-1.4,0,2.8]);
+verifyEqual(testCase,stack.interlayer.model,'fangkaxiras2016carr');
+rng(11);
+r = 3*randn(2,300);
+for pair = [1,2;2,3].'
+    for alpha = 1:2
+        for beta = 1:2
+            h = realSpaceInterlayerHopping(r,stack,pair(1),pair(2),alpha,beta);
+            verifyEqual(testCase,h, ...
+                legacyHopping(r,stack,pair(1),pair(2),alpha,beta), ...
+                'AbsTol',1e-15);
+        end
+    end
+end
+end
+
+function testAnchoredModelFollowsCarrRelatively(testCase)
+fk = getInterlayerHoppingParameters('fangKaxiras2016',0);
+epsilon = [-0.1,-0.03,0.05];
+anchored = getInterlayerHoppingParameters('fangKaxiras2016Carr',epsilon);
+carr = getInterlayerHoppingParameters('carr2018',epsilon);
+carr0 = getInterlayerHoppingParameters('carr2018',0);
+for name = {'lambda0','lambda3','lambda6'}
+    verifyEqual(testCase,anchored.(name{1}), ...
+        fk.(name{1})*carr.(name{1})/carr0.(name{1}),'RelTol',1e-13);
+end
+for name = {'xi0','kappa0','xi3','x3','xi6','x6','kappa6'}
+    verifyEqual(testCase,anchored.(name{1}), ...
+        fk.(name{1})+carr.(name{1})-carr0.(name{1}),'AbsTol',1e-13);
+end
 end
 
 function h = legacyHopping(rVector,stack,j,k,alpha,beta)

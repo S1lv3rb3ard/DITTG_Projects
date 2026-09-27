@@ -3,7 +3,7 @@ function tests = testMomentumLocalIDOS
 tests = functiontests(localfunctions);
 end
 
-function linecutMatchesExactPoissonFormula(testCase)
+function testLinecutMatchesExactPoissonFormula(testCase)
 H = {diag([-1,0.25,1.5]),diag([-0.5,0.75,2.0])};
 qPoints = [0,1;0,0];
 V = speye(3);
@@ -35,7 +35,7 @@ verifyNotEqual(testCase,result.momentumLocalIDOS(1,:,:), ...
 verifyFalse(testCase,isfield(result,'totalIDOS'));
 end
 
-function surfacePlotUsesSelectedEtaSlice(testCase)
+function testSurfacePlotUsesSelectedEtaSlice(testCase)
 linecut.q = [0,1;0,0];
 linecut.kPath = [0,1];
 linecut.tickLocs = [0,1];

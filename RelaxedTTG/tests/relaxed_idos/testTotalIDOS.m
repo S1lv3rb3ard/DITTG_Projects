@@ -3,7 +3,7 @@ function tests = testTotalIDOS
 tests = functiontests(localfunctions);
 end
 
-function blockGreenMatchesDirectResolvent(testCase)
+function testBlockGreenMatchesDirectResolvent(testCase)
 rng(7);
 dimension = 12;
 randomMatrix = randn(dimension)+1i*randn(dimension);
@@ -34,7 +34,7 @@ verifyGreaterThanOrEqual(testCase,lanczos.scalarWeights, ...
 verifyEqual(testCase,sum(lanczos.scalarWeights),1,'AbsTol',1e-13);
 end
 
-function greenIDOSMatchesExactPoissonFormula(testCase)
+function testGreenIDOSMatchesExactPoissonFormula(testCase)
 H = diag([-1.0,-0.25,0.5,1.25]);
 V = speye(4);
 E = linspace(-2,2,41);
@@ -63,7 +63,7 @@ verifyGreaterThanOrEqual(testCase,diff(result.totalIDOS,1,2), ...
 verifyEqual(testCase,sum(result.padeWeights),1,'AbsTol',1e-13);
 end
 
-function positiveQQuadratureProducesOnlyTotalIDOS(testCase)
+function testPositiveQQuadratureProducesOnlyTotalIDOS(testCase)
 H = {diag([-1,0]),diag([1,2])};
 qPoints = [0,1;0,0];
 qWeights = [1;3];

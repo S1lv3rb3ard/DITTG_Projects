@@ -11,7 +11,7 @@ stack = getStack(a,[-1.4,0,2.8]);
 % Uniform vertical compression of the interfaces (eps = d/d0 - 1 < 0), e.g.
 % stack = setInterlayerCompression(stack,compressionFromPressure(5));  % 5 GPa
 W = 0.35;
-L = 10;
+L = 8;
 DoF = getDoF(stack,W,L,'clean');
 
 tA = [0,0.3302,0.23206,0.04969,-0.02499, ...
@@ -28,7 +28,7 @@ shells = getInterpolatedIntralayerHoppingValues(stack,tA,tB,[]);
 [relaxationFields, relaxationInfo] = getRelaxationFields(stack, ...
     fullfile(projectRoot,'data'),struct('fallback','none'));
 
-pointsPerSegment = 40;
+pointsPerSegment = 20;
 linecut = rttg_common.getLinecut(stack.K,pointsPerSegment);
 E = linspace(-0.2, 0.2, 5e3);
 

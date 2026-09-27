@@ -3,7 +3,7 @@ function tests = testDrivenSpaceTimeHamiltonian
 tests = functiontests(localfunctions);
 end
 
-function lockedDiagonalAndCouplingsAreCorrect(testCase)
+function testLockedDiagonalAndCouplingsAreCorrect(testCase)
 baseDimension = 2;
 Hfun = @(q) [q(1),1-0.2i;1+0.2i,q(2)];
 q = [0.4;-0.3];
@@ -48,19 +48,19 @@ verifyEqual(testCase,full(selector(zeroRange,:)),eye(baseDimension));
 verifyEqual(testCase,nnz(selector),baseDimension);
 end
 
-function opticalPulseIsSuppressedBetweenShots(testCase)
+function testOpticalPulseIsSuppressedBetweenShots(testCase)
 optical = driven_rttg.makeOpticalDriveSource( ...
     1,[0.1;0.2],sqrt(2),0,1, ...
     struct('type','gaussianTrain','period',20,'fwhm',2,'center',0));
 atPulse = driven_rttg.evaluateDriveEnvelope(optical,0);
 betweenPulses = driven_rttg.evaluateDriveEnvelope(optical,10);
-metrics = getOpticalPulseMetrics(optical);
+metrics = driven_rttg.getOpticalPulseMetrics(optical);
 verifyEqual(testCase,atPulse,1,'AbsTol',1e-14);
 verifyLessThan(testCase,betweenPulses,1e-20);
 verifyLessThan(testCase,metrics.equivalentIntensityDutyCycle,0.1);
 end
 
-function lowOrderRelationIsDetected(testCase)
+function testLowOrderRelationIsDetected(testCase)
 optical = driven_rttg.makeOpticalDriveSource( ...
     1,[1;0],1,0,1, ...
     struct('type','gaussianTrain','period',20,'fwhm',2,'center',0));
@@ -72,7 +72,7 @@ verifyEqual(testCase,report.spatialResidual,[0;0],'AbsTol',1e-14);
 verifyEqual(testCase,report.frequencyResidual,0,'AbsTol',1e-14);
 end
 
-function multipleSourcesProduceExpectedSidebandCount(testCase)
+function testMultipleSourcesProduceExpectedSidebandCount(testCase)
 envelope = struct( ...
     'type','gaussianTrain','period',30,'fwhm',2,'center',0);
 optical(1) = driven_rttg.makeOpticalDriveSource( ...

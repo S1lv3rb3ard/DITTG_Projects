@@ -8,9 +8,9 @@ addpath(genpath(projectRoot));
 % frequencies in rad/fs, so hbar converts sideband frequencies to eV.
 hbar = 0.6582119569; % eV fs
 a = 1.42*sqrt(3);
-stack = getStack(a,[-0.3,0,0.3]);
-W = 0.02;
-L = 3;
+stack = getStack(a,[-1.4,0,2.8]);
+W = 0.35;
+L = 5;
 DoF = getDoF(stack,W,L,'clean');
 q = stack.K(:,2);
 

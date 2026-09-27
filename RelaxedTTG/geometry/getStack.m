@@ -32,7 +32,8 @@ end
 scale = max(abs(stack.tau),[],'all');
 stack.tau(abs(stack.tau) < 100*eps(scale)) = 0;
 
-% Uniform interlayer spacing d0 = 3.35 A with the Carr et al. (2018)
-% interlayer parameterization; change with setInterlayerCompression.
-stack = setInterlayerCompression(stack,[0,0],'carr2018');
+% Uniform interlayer spacing d0 = 3.35 A. At zero compression the interlayer
+% hopping is exactly Fang-Kaxiras (2016), as in arXiv:2606.13434; change the
+% spacing with setInterlayerCompression.
+stack = setInterlayerCompression(stack,[0,0],'fangKaxiras2016Carr');
 end

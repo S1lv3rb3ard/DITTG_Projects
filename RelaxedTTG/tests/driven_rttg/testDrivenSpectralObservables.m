@@ -3,7 +3,7 @@ function tests = testDrivenSpectralObservables
 tests = functiontests(localfunctions);
 end
 
-function centralSpectralMeasureMatchesDirectResolvent(testCase)
+function testCentralSpectralMeasureMatchesDirectResolvent(testCase)
 baseDimension = 6;
 orbitalEnergy = [-1.0,-0.65,-0.2,0.25,0.6,1.05].';
 Hfun = @(q) diag(orbitalEnergy+0.08*q(1)-0.03*q(2));
@@ -48,7 +48,7 @@ verifyEqual(testCase,computedIntegrated,expectedIntegrated.', ...
 for energyIndex = [1,8,16,24,31]
     z = E(energyIndex)+1i*eta;
     exactGreen = V'*((K-z*speye(size(K,1)))\V);
-    expectedDensity = (exactGreen-exactGreen')/(2i*pi);
+    expectedDensity = full((exactGreen-exactGreen')/(2i*pi));
     computedDiagonal = squeeze( ...
         observable.combined.orbitalSpectralFunction( ...
         1,1,energyIndex,:));
@@ -85,7 +85,7 @@ verifyLessThanOrEqual(testCase, ...
     1+1e-12*ones(size(observable.combined.boundaryWeightByPole{1})));
 end
 
-function opticalAcousticContrastUsesInclusionExclusion(testCase)
+function testOpticalAcousticContrastUsesInclusionExclusion(testCase)
 baseDimension = 2;
 H = diag([-0.4,0.7]);
 optical = driven_rttg.makeOpticalDriveSource( ...

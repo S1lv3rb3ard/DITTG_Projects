@@ -3,16 +3,16 @@ function tests = testMomentumLocalDOSLinecut
 tests = functiontests(localfunctions);
 end
 
-function momentumLDoSSelectorHasSixOrbitals(testCase)
+function testMomentumLDoSSelectorHasSixOrbitals(testCase)
 stack = getStack(1.42*sqrt(3),[-1.4,0,2.8]);
 DoF = getDoF(stack,0.25,3,'clean');
 X = getCenterBasis(DoF,1:6);
 verifySize(testCase,X,[2*size(DoF,1),6]);
 verifyEqual(testCase,full(sum(X,1)),ones(1,6));
-verifyEqual(testCase,full(sum(X,2)),double(sum(X,2) > 0));
+verifyEqual(testCase,full(sum(X,2)),full(double(sum(X,2) > 0)));
 end
 
-function highSymmetryPathAndPlotAreConsistent(testCase)
+function testHighSymmetryPathAndPlotAreConsistent(testCase)
 stack = getStack(1.42*sqrt(3),[-0.3,0,0.3]);
 pointsPerSegment = 2;
 linecut = rttg_common.getLinecut(stack.K,pointsPerSegment);
@@ -34,7 +34,7 @@ verifyEqual(testCase,imageHandle.CData,LDoS.');
 verifyEqual(testCase,ax.XTick,linecut.tickLocs,'AbsTol',1e-14);
 end
 
-function relaxedLinecutProducesFiniteMomentumLDoS(testCase)
+function testRelaxedLinecutProducesFiniteMomentumLDoS(testCase)
 a = 1.42*sqrt(3);
 stack = getStack(a,[-1.4,0,2.8]);
 W = 0.10;

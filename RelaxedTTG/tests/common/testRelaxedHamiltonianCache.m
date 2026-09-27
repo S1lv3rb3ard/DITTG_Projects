@@ -3,7 +3,7 @@ function tests = testRelaxedHamiltonianCache
 tests = functiontests(localfunctions);
 end
 
-function cachedMatchesDirect(testCase)
+function testCachedMatchesDirect(testCase)
 a = 1.42*sqrt(3);
 stack = getStack(a,[-1.4,0,2.8]);
 DoF = getDoF(stack,0.25,3,'clean');

@@ -19,7 +19,7 @@ testCase.TestData.data = fullfile(testCase.TestData.dataFolder, ...
     'triG_data_1.50_2.00_6.jld');
 end
 
-function loaderReproducesHullValues(testCase)
+function testLoaderReproducesHullValues(testCase)
 % At the configuration of a Julia hull node gamma (fractional coordinates of
 % the shift b = R - x), RelaxedTTG coordinates are x = -Phi*tE_t*gamma and
 % the field must equal Phi*u_Julia(node) exactly.
@@ -54,24 +54,27 @@ for layer = 1:3
 end
 end
 
-function loaderRejectsMismatchedStack(testCase)
+function testLoaderRejectsMismatchedStack(testCase)
 stack = getStack(testCase.TestData.a,[1.5,0,2.0]);   % wrong rotation sense
 verifyError(testCase,@() loadJuliaTrilayerRelaxation( ...
     testCase.TestData.minimizer,testCase.TestData.data,stack, ...
     struct('verbose',false)),'loadJuliaTrilayerRelaxation:geometryMismatch');
 end
 
-function getRelaxationFieldsFindsJuliaOutput(testCase)
+function testGetRelaxationFieldsFindsJuliaOutput(testCase)
 [~,info] = getRelaxationFields(testCase.TestData.stack, ...
     testCase.TestData.dataFolder,struct('loader',struct('verbose',false)));
 verifyEqual(testCase,info.source,'julia');
 verifyEqual(testCase,info.N,6);
 end
 
-function sublatticeBondsCarryOnlyPhysicalStrain(testCase)
-% With disregistry-consistent evaluation, nearest-neighbour A-B bonds change
-% by the continuum strain (a few 1e-3 A here). Evaluating at T_j(R+tau)
-% would change them by O(max|u|) ~ 0.08 A.
+function testSublatticeBondsCarryOnlyPhysicalStrain(testCase)
+% With disregistry-consistent evaluation, the shortest bond of each channel
+% changes by the continuum strain times its length. For this 1.5/2.0 degree
+% fixture, max|u| ~ 0.08 A over a moire length ~ 94 A gives a strain of
+% ~5e-3 and changes of ~0.01 A on the 2.46 A lattice bonds (AA, BB) and
+% less on the 1.42 A A-B bonds. Evaluating at T_j(R+tau) would change the
+% bonds by O(max|u|) ~ 0.08 A, so 0.03 A separates the two conventions.
 stack = testCase.TestData.stack;
 fields = loadJuliaTrilayerRelaxation(testCase.TestData.minimizer, ...
     testCase.TestData.data,stack,struct('verbose',false));
@@ -90,13 +93,13 @@ for layer = 1:3
         nearest = abs(length0-min(length0(length0 > 1e-9))) < 1e-9;
         change = abs(channels(c).relaxedLength(:,nearest)- ...
             vecnorm(channels(c).bond0(:,nearest),2,1));
-        verifyLessThan(testCase,max(change,[],'all'),1e-2, ...
+        verifyLessThan(testCase,max(change,[],'all'),3e-2, ...
             sprintf('layer %d channel %s',layer,channels(c).name));
     end
 end
 end
 
-function unrelaxedIntralayerUsesOneBlochGauge(testCase)
+function testUnrelaxedIntralayerUsesOneBlochGauge(testCase)
 % With zero relaxation the central 2x2 intralayer block of layer j must be
 %   H_AA(q) = sum_d t(|d|) exp(-i q.d),
 %   H_AB(q) = sum_{r in d+tau} t(|r|) exp(+i q.r)  (row A, column B),

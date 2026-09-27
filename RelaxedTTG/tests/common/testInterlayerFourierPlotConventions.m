@@ -3,7 +3,7 @@ function tests = testInterlayerFourierPlotConventions
 tests = functiontests(localfunctions);
 end
 
-function spectatorIndependentLimit(testCase)
+function testSpectatorIndependentLimit(testCase)
 stack = getStack(1.42*sqrt(3),[-0.3,0,0.3]);
 zeroFields = cell(1,3);
 for layer = 1:3
