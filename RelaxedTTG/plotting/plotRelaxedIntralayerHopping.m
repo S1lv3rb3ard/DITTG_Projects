@@ -29,26 +29,24 @@ k = otherLayers(1);
 l = otherLayers(2);
 bK = stack.A{k}*fractionK;
 bL = stack.A{l}*fractionL;
-t = stack.tau(:,layer);
 assert(ismember(options.shellReferenceLayer,1:3), ...
     'shellReferenceLayer must be 1, 2, or 3.');
-shellMap = stack.A{layer}/stack.A{options.shellReferenceLayer};
-RA = shellMap*shellsReference.matA;
-RB = shellMap*shellsReference.matB;
-u = relaxationFields{layer};
 
+% Relaxed bonds at the column configuration b = (bK,bL), with orbital
+% displacements evaluated at their disregistry configurations.
+channels = sampleRelaxedIntralayerChannels(stack,shellsReference, ...
+    relaxationFields{layer},layer,bK,bL, ...
+    struct('shellReferenceLayer',options.shellReferenceLayer));
 data = cell(2,2);
-data{1,1} = makeChannel(RA, ...
-    RA+u(RA+bK,RA+bL)-u(bK,bL),shellsReference.intraAA,'AA');
-data{2,2} = makeChannel(RA, ...
-    RA+u(RA+bK+t,RA+bL+t)-u(bK+t,bL+t), ...
-    shellsReference.intraAA,'BB');
-data{1,2} = makeChannel(RB, ...
-    RB+u(RB+bK,RB+bL)-u(bK+t,bL+t), ...
-    shellsReference.intraAB,'AB');
-data{2,1} = makeChannel(RB, ...
-    RB+u(RB+bK+t,RB+bL+t)-u(bK,bL), ...
-    shellsReference.intraAB,'BA');
+for c = 1:4
+    channel = struct();
+    channel.label = channels(c).name;
+    channel.unrelaxedVector = channels(c).bond0;
+    channel.relaxedVector = channels(c).relaxedBond;
+    channel.relaxedLength = channels(c).relaxedLength(:).';
+    channel.hopping = channels(c).hopping(:).';
+    data{channels(c).rowOrbital,channels(c).colOrbital} = channel;
+end
 
 if isempty(options.figureHandle)
     figureHandle = figure('Name',sprintf('Relaxed intralayer %d',layer));
@@ -77,13 +75,4 @@ for alpha = 1:2
     end
 end
 sgtitle(layout,sprintf('Layer %d relaxed intralayer bonds',layer));
-end
-
-function channel = makeChannel(unrelaxedVector,relaxedVector,interpolant,label)
-channel.label = label;
-channel.unrelaxedVector = unrelaxedVector;
-channel.relaxedVector = relaxedVector;
-channel.relaxedLength = vecnorm(relaxedVector,2,1);
-channel.hopping = interpolant(channel.relaxedLength).';
-channel.hopping = channel.hopping(:).';
 end

@@ -6,6 +6,8 @@ addpath(genpath(projectRoot));
 
 a = 1.42*sqrt(3);
 stack = getStack(a,[-1.4,0,2.8]);
+% Uniform vertical compression of the interfaces (eps = d/d0 - 1 < 0), e.g.
+% stack = setInterlayerCompression(stack,compressionFromPressure(5));  % 5 GPa
 DoF = getDoF(stack,0.35,15,'clean');
 q = stack.K(:,2);
 
@@ -15,8 +17,10 @@ tB = [-2.99251,-0.28983,0.02791,-0.00877,-0.01870, ...
       0.00621,-0.00256,-0.00018,-0.00033,-0.00264].';
 shells = getInterpolatedIntralayerHoppingValues(stack,tA,tB,[]);
 
-% Replace these toy fields with the mechanically relaxed fields.
-relaxationFields = makeToyTrilayerRelaxation(stack,0.01*a);
+% Mechanically relaxed fields from the Julia minimizer (example2.jl), read
+% from <projectRoot>/data. Falls back to the toy field with a warning.
+[relaxationFields,relaxationInfo] = getRelaxationFields(stack, ...
+    fullfile(projectRoot,'data'),struct('fallback','toy','toyAmplitude',0.01*a));
 
 useGPU = false;
 try
