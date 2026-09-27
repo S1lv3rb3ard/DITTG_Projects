@@ -75,3 +75,17 @@ rttg_common.makeCachedRelaxedHamiltonianFunction
 * `realSpaceInterlayerHopping` accepts an optional per-sample `localEpsilon`.
 * New Julia files `TrilayersVertical.jl`, `example_vertical.jl` for
   corrugated, pressure-consistent relaxation.
+
+## Default interlayer model restored to Fang-Kaxiras (2026-09-27)
+
+* The default interlayer model is now `'fangKaxiras2016Carr'`: exactly the
+  Fang-Kaxiras (2016) parameters at zero compression (as in
+  arXiv:2606.13434 and in RelaxedTTG before compression support), with the
+  Carr et al. (2018) compression dependence applied relative to `eps = 0`.
+  The previous default, the raw `'carr2018'` fits, changed the unrelaxed
+  spectrum at zero compression; select it explicitly if needed.
+* Test functions are renamed to begin with `test`. Before this change
+  `functiontests(localfunctions)` collected none of them, so no test in
+  `tests/` was actually executed.
+* New test `tests/common/testUnrelaxedLimitMatchesPaper.m`.
+

@@ -82,10 +82,14 @@ nearest-neighbour A-B bonds, against a physical 0.004 A). All intralayer
 channels are sampled by `sampleRelaxedIntralayerChannels`, and interlayer
 bonds by `evaluateRelaxedInterlayerPosition`.
 
-**Vertical compression.** `getStack` sets both interfaces to `d0 = 3.35 A`
-with the interlayer parameters of Carr, Fang, Jarillo-Herrero & Kaxiras
-(PRB 98, 085144, 2018), whose quadratic fits in `eps = d/d0 - 1` (negative
-under compression) are used at every compression, including zero:
+**Vertical compression.** `getStack` sets both interfaces to `d0 = 3.35 A`.
+At zero compression the interlayer hopping is exactly the Fang-Kaxiras
+(2016) model used in arXiv:2606.13434 (model `'fangKaxiras2016Carr'`, the
+default). Under compression or expansion, `eps = d/d0 - 1 ~= 0` (negative
+under compression), the parameters follow the fits of Carr, Fang,
+Jarillo-Herrero & Kaxiras (PRB 98, 085144, 2018) *relative to* `eps = 0`:
+amplitudes are multiplied by `lambda_C(eps)/lambda_C(0)` and shape
+parameters are shifted by `y_C(eps) - y_C(0)`.
 
 ```matlab
 stack = setInterlayerCompression(stack,[eps12,eps23]);
@@ -93,14 +97,20 @@ stack = setInterlayerCompression(stack,compressionFromPressure(P_GPa));
 ```
 
 The fits cover `-0.2 <= eps <= 0`. For expansion, `0 < eps <= 0.15` (for
-example the AA regions of a corrugated moire), the amplitudes lambda0,
-lambda3, lambda6 continue exponentially and the shape parameters linearly,
-matched in value and slope at `eps = 0`; the quadratic fits themselves turn
-upward for `eps > 0` and are not used there. Values outside
-`[-0.2, 0.15]` warn. A per-sample distance can be passed directly,
-`realSpaceInterlayerHopping(r,stack,j,k,alpha,beta,localEpsilon)`. The
-previous constant Fang-Kaxiras (2016) parameters remain available at zero
-compression as `setInterlayerCompression(stack,0,'fangKaxiras2016')`.
+example the AA regions of a corrugated moire), the amplitudes continue
+exponentially and the shape parameters linearly, matched in value and slope
+at `eps = 0`. Values outside `[-0.2, 0.15]` warn. A per-sample distance can
+be passed directly,
+`realSpaceInterlayerHopping(r,stack,j,k,alpha,beta,localEpsilon)`.
+The raw Carr et al. fits are available as the model `'carr2018'`; note that
+at `eps = 0` they differ from Fang-Kaxiras by 2-3% in the leading
+tunnelling amplitude (and ~20% in `xi6`, `x6`), which visibly moves flat
+bands near magic angles.
+
+**Tests.** Run `runModuleTests("all")`. Local test functions must begin
+with `test` to be collected by `functiontests`.
+`tests/common/testUnrelaxedLimitMatchesPaper.m` checks that zero relaxation
+reproduces the momentum-space Hamiltonian of arXiv:2606.13434.
 
 ### Corrugated, pressure-consistent relaxation (Julia)
 

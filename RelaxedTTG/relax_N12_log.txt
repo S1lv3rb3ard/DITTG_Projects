@@ -1,0 +1,83 @@
+Parsed args:
+  theta12  =>  1.4
+  N  =>  12
+  theta23  =>  -2.8
+
+=============================================================
+        Using 4 workers... 
+
+Iter     Function value   Gradient norm 
+     0    -1.157988e-18     8.629246e-01
+ * time: 0.014999866485595703
+    10    -1.071864e-03     2.593467e-04
+ * time: 0.8529999256134033
+    20    -1.071868e-03     9.257882e-05
+ * time: 1.1540000438690186
+    30    -1.071869e-03     3.874891e-05
+ * time: 1.4549999237060547
+    40    -1.071869e-03     6.346383e-06
+ * time: 1.74399995803833
+┌ Warning: x_tol is deprecated. Use x_abstol or x_reltol instead. The provided value (0.0001) will be used as x_abstol.
+└ @ Optim C:\Users\kensi\.julia\packages\Optim\gmigl\src\types.jl:110
+┌ Warning: f_tol is deprecated. Use f_abstol or f_reltol instead. The provided value (1.0e-11) will be used as f_reltol.
+└ @ Optim C:\Users\kensi\.julia\packages\Optim\gmigl\src\types.jl:120
+ * Status: success
+
+ * Candidate solution
+    Final objective value:     -1.071869e-03
+
+ * Found with
+    Algorithm:     L-BFGS
+
+ * Convergence measures
+    |x - x'|               = 8.06e-05 ≤ 1.0e-04
+    |x - x'|/|x'|          = 2.42e-05 ≰ 0.0e+00
+    |f(x) - f(x')|         = 2.38e-13 ≰ 0.0e+00
+    |f(x) - f(x')|/|f(x')| = 2.22e-10 ≰ 1.0e-11
+    |g(x)|                 = 1.42e-06 ≰ 1.0e-08
+
+ * Work counters
+    Seconds run:   2  (vs limit Inf)
+    Iterations:    46
+    f(x) calls:    140
+    ∇f(x) calls:   140
+
+────────────────────────────────────────────────────────────────────────────────────────────────────────
+                                               Time                             Allocations
+                                 ────────────────────────────────    ──────────────────────────────────
+       Tot / % measured:                  18.9s / 70.2%                       2.39GiB / 77.9%
+ ──────────────────────────────  ────────────────────────────────    ──────────────────────────────────
+ Section                 ncalls    time    %tot     avg                alloc    %tot      avg
+────────────────────────────────────────────────────────────────────────────────────────────────────────
+ Hull setup                   1   7.08s   53.4%   7.08s  ████▎       1.07GiB   57.4%  1.07GiB  ████▋
+ optimize                     1   3.18s   24.0%   3.18s  █▉           433MiB   22.7%   433MiB  █▉
+ ├─ fg!(F,G,u)              140   1.07s    8.0%  7.61ms  ▋           38.4MiB    2.0%   281KiB  ▏
+ │  ├─ fg_gsfe_shared       140   767ms    5.8%  5.48ms  ▌           12.8MiB    0.7%  93.9KiB
+ │  ├─ g_elastic_shared     140   112ms    0.8%   798μs  ▏           14.0MiB    0.7%   102KiB
+ │  ├─ g_gsfe_shared        140  50.4ms    0.4%   360μs              6.83MiB    0.4%  49.9KiB
+ │  ├─ sum gradients        140  43.4ms    0.3%   310μs                    ∅       ∅        ∅
+ │  ├─ views                420  30.8ms    0.2%  73.4μs              3.48MiB    0.2%  8.50KiB
+ │  ├─ forward fft          140  30.3ms    0.2%   216μs              1.27MiB    0.1%  9.28KiB
+ │  ├─ backward fft         140  14.5ms    0.1%   103μs                    ∅       ∅        ∅
+ │  └─ f_elastic_shared     140  9.19ms    0.1%  65.7μs              2.19KiB    0.0%    16.0B
+ ├─ dot                     661  48.1ms    0.4%  72.8μs                    ∅       ∅        ∅
+ └─ ldiv!                    46  6.38ms    0.0%   139μs                    ∅       ∅        ∅
+ Trilayers.jl                 1   678ms    5.1%   678ms  ▍           28.2MiB    1.5%  28.2MiB  ▏
+ Trilayer setup               1   658ms    5.0%   658ms  ▍            159MiB    8.3%   159MiB  ▋
+ fg_gsfe_shared               1   636ms    4.8%   636ms  ▍           70.7MiB    3.7%  70.7MiB  ▎
+ g_elastic_shared             1   480ms    3.6%   480ms  ▎           53.5MiB    2.8%  53.5MiB  ▎
+ options                      1   287ms    2.2%   287ms  ▏           41.1MiB    2.2%  41.1MiB  ▏
+ g_gsfe_shared                1  61.5ms    0.5%  61.5ms              6.77MiB    0.4%  6.77MiB
+ GrapheneParameters.jl        1  52.6ms    0.4%  52.6ms              5.79MiB    0.3%  5.79MiB
+ FFTW wisdom i/o              2  40.3ms    0.3%  20.2ms              3.81MiB    0.2%  1.90MiB
+ forward fft                  1  37.9ms    0.3%  37.9ms              2.67MiB    0.1%  2.67MiB
+ backward fft                 1  25.7ms    0.2%  25.7ms              2.58MiB    0.1%  2.58MiB
+ views                        3  10.0ms    0.1%  3.34ms               648KiB    0.0%   216KiB
+ Initialization               2  9.72ms    0.1%  4.86ms              2.69MiB    0.1%  1.34MiB
+ method                       1  8.29ms    0.1%  8.29ms              1.08MiB    0.1%  1.08MiB
+ function setup               1  4.42ms    0.0%  4.42ms               314KiB    0.0%   314KiB
+ sum gradients                1   317μs    0.0%   317μs                    ∅       ∅        ∅
+ f_elastic_shared             1   201μs    0.0%   201μs                16.0B    0.0%    16.0B
+ dot                          1   194μs    0.0%   194μs                    ∅       ∅        ∅
+────────────────────────────────────────────────────────────────────────────────────────────────────────
+

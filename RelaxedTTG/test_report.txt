@@ -1,0 +1,105 @@
+MATLAB 26.1.0.3346908 (R2026a) Update 5, 27-Sep-2026 12:32:27
+Running testInterlayerCompression
+.........
+Done testInterlayerCompression
+__________
+
+Running testInterlayerFourierPlotConventions
+.
+Done testInterlayerFourierPlotConventions
+__________
+
+Running testModuleBoundaries
+..
+Done testModuleBoundaries
+__________
+
+Running testRelaxationConventions
+.....
+Done testRelaxationConventions
+__________
+
+Running testRelaxedHamiltonianCache
+.
+Done testRelaxedHamiltonianCache
+__________
+
+Running testUnrelaxedLimitMatchesPaper
+.
+Done testUnrelaxedLimitMatchesPaper
+__________
+
+Running testDrivenSpaceTimeHamiltonian
+....
+Done testDrivenSpaceTimeHamiltonian
+__________
+
+Running testDrivenSpectralObservables
+..
+Done testDrivenSpectralObservables
+__________
+
+Running testMomentumLocalDOSLinecut
+..Starting DoS computation: 1 batches total...
+Computed: batch 1 of 1
+.
+Done testMomentumLocalDOSLinecut
+__________
+
+Running testIDOSFractalDimension
+..
+Done testIDOSFractalDimension
+__________
+
+Running testMomentumLocalIDOS
+..
+Done testMomentumLocalIDOS
+__________
+
+Running testTotalIDOS
+...
+Done testTotalIDOS
+__________
+
+
+===== SUMMARY =====
+                                           <strong>Name</strong>                                            <strong>Passed</strong>    <strong>Failed</strong>    <strong>Incomplete</strong>    <strong>Duration</strong>       <strong>Details</strong>   
+    <strong>___________________________________________________________________________________</strong>    <strong>______</strong>    <strong>______</strong>    <strong>__________</strong>    <strong>_________</strong>    <strong>____________</strong>
+
+    {'testInterlayerCompression/testCarrFitsAtZeroAndTenPercent'                      }    true      false       false       0.0064065    {1×1 struct}
+    {'testInterlayerCompression/testPressureLawRoundTrip'                             }    true      false       false       0.0047243    {1×1 struct}
+    {'testInterlayerCompression/testExtrapolationWarns'                               }    true      false       false        0.033606    {1×1 struct}
+    {'testInterlayerCompression/testLegacyModelReproducesPreviousHopping'             }    true      false       false       0.0086314    {1×1 struct}
+    {'testInterlayerCompression/testCompressionIsPerInterface'                        }    true      false       false        0.016925    {1×1 struct}
+    {'testInterlayerCompression/testExpansionContinuationIsSmoothAndDecaying'         }    true      false       false        0.020068    {1×1 struct}
+    {'testInterlayerCompression/testLocalDistanceOverridesInterface'                  }    true      false       false       0.0051935    {1×1 struct}
+    {'testInterlayerCompression/testDefaultStackReproducesPaperModel'                 }    true      false       false        0.011209    {1×1 struct}
+    {'testInterlayerCompression/testAnchoredModelFollowsCarrRelatively'               }    true      false       false        0.012361    {1×1 struct}
+    {'testInterlayerFourierPlotConventions/testSpectatorIndependentLimit'             }    true      false       false        0.019547    {1×1 struct}
+    {'testModuleBoundaries/testPublicEntryPointsExist'                                }    true      false       false       0.0064812    {1×1 struct}
+    {'testModuleBoundaries/testObsoleteMixedEntryPointsAreAbsent'                     }    true      false       false       0.0051701    {1×1 struct}
+    {'testRelaxationConventions/testLoaderReproducesHullValues'                       }    true      false       false        0.020751    {1×1 struct}
+    {'testRelaxationConventions/testLoaderRejectsMismatchedStack'                     }    true      false       false        0.016798    {1×1 struct}
+    {'testRelaxationConventions/testGetRelaxationFieldsFindsJuliaOutput'              }    true      false       false       0.0083568    {1×1 struct}
+    {'testRelaxationConventions/testSublatticeBondsCarryOnlyPhysicalStrain'           }    true      false       false         0.96513    {1×1 struct}
+    {'testRelaxationConventions/testUnrelaxedIntralayerUsesOneBlochGauge'             }    true      false       false        0.074815    {1×1 struct}
+    {'testRelaxedHamiltonianCache/testCachedMatchesDirect'                            }    true      false       false         0.17069    {1×1 struct}
+    {'testUnrelaxedLimitMatchesPaper/testZeroRelaxationEqualsPaperHamiltonian'        }    true      false       false         0.49813    {1×1 struct}
+    {'testDrivenSpaceTimeHamiltonian/testLockedDiagonalAndCouplingsAreCorrect'        }    true      false       false        0.020099    {1×1 struct}
+    {'testDrivenSpaceTimeHamiltonian/testOpticalPulseIsSuppressedBetweenShots'        }    true      false       false       0.0015029    {1×1 struct}
+    {'testDrivenSpaceTimeHamiltonian/testLowOrderRelationIsDetected'                  }    true      false       false       0.0032481    {1×1 struct}
+    {'testDrivenSpaceTimeHamiltonian/testMultipleSourcesProduceExpectedSidebandCount' }    true      false       false       0.0048196    {1×1 struct}
+    {'testDrivenSpectralObservables/testCentralSpectralMeasureMatchesDirectResolvent' }    true      false       false        0.081132    {1×1 struct}
+    {'testDrivenSpectralObservables/testOpticalAcousticContrastUsesInclusionExclusion'}    true      false       false        0.012522    {1×1 struct}
+    {'testMomentumLocalDOSLinecut/testMomentumLDoSSelectorHasSixOrbitals'             }    true      false       false       0.0051581    {1×1 struct}
+    {'testMomentumLocalDOSLinecut/testHighSymmetryPathAndPlotAreConsistent'           }    true      false       false         0.11357    {1×1 struct}
+    {'testMomentumLocalDOSLinecut/testRelaxedLinecutProducesFiniteMomentumLDoS'       }    true      false       false        0.090476    {1×1 struct}
+    {'testIDOSFractalDimension/testUniformMeasureHasDimensionOne'                     }    true      false       false        0.011757    {1×1 struct}
+    {'testIDOSFractalDimension/testAtomHasDimensionZero'                              }    true      false       false       0.0047727    {1×1 struct}
+    {'testMomentumLocalIDOS/testLinecutMatchesExactPoissonFormula'                    }    true      false       false        0.011855    {1×1 struct}
+    {'testMomentumLocalIDOS/testSurfacePlotUsesSelectedEtaSlice'                      }    true      false       false         0.08036    {1×1 struct}
+    {'testTotalIDOS/testBlockGreenMatchesDirectResolvent'                             }    true      false       false        0.010495    {1×1 struct}
+    {'testTotalIDOS/testGreenIDOSMatchesExactPoissonFormula'                          }    true      false       false       0.0062166    {1×1 struct}
+    {'testTotalIDOS/testPositiveQQuadratureProducesOnlyTotalIDOS'                     }    true      false       false       0.0052939    {1×1 struct}
+
+Passed 35, Failed 0, Incomplete 0, Total 35
